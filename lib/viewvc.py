@@ -5625,6 +5625,15 @@ def view_error(server, cfg):
 
 def main(server, cfg):
     try:
+        if server.error is not None:
+            if isinstance(server.error, sapi.UriValidateException):
+                raise ViewVCException(
+                    f"Host name normalization error: {server.error}", "400 Bad Request"
+                )
+            elif isinstance(server.error, sapi.ClientProtocolError):
+                raise ViewVCException(f"Client protocol error: {server.error}", "400 Bad Request")
+            else:
+                raise ViewVCException(f"{repr(server.error)}", "500 Internal Server Error")
         if not sapi.is_allowed_hosts(server.uri_host, cfg.general.allowed_hosts):
             raise ViewVCException(
                 f"Invalid host name supplied: {server.uri_host}", "400 Bad Request"
