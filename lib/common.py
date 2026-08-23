@@ -18,6 +18,7 @@ import sys
 import io
 import locale
 import codecs
+from http import HTTPStatus
 
 # Special type indicators for diff header processing and idiff return codes
 _RCSDIFF_IS_BINARY = "binary-diff"
@@ -69,9 +70,14 @@ class TemplateData:
 
 
 class ViewVCException(Exception):
-    def __init__(self, msg, status=None):
+    def __init__(self, msg, status_code=None):
         self.msg = msg
-        self.status = status
+        if isinstance(status_code, int) and status_code in set(HTTPStatus):
+            self.status = f"{status_code} {HTTPStatus(status_code).phrase}"
+        elif status_code is None:
+            self.status = None
+        else:
+            self.status = f"{status_code} Unknown Status"
 
     def __str__(self):
         if self.status:
